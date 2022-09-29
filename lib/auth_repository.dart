@@ -5,10 +5,14 @@ class AuthRepository{
   // Sign in
 
   Future<String> fetchUserIdFromAttributes() async{
-    final attributes = await Amplify.Auth.fetchUserAttributes();
-    final subAttribute = attributes.firstWhere((element) => element.userAttributeKey == 'sub');
-    final userId = subAttribute.value;
-    return userId;
+    try{
+      final attributes = await Amplify.Auth.fetchUserAttributes();
+      final subAttribute = attributes.firstWhere((element) => element.userAttributeKey.toString() == 'sub');
+      final userId = subAttribute.value;
+      return userId;
+    }catch(e){
+      throw e;
+    }
   }
 
   Future<String> webSignIn() async{
@@ -24,8 +28,6 @@ class AuthRepository{
     }catch(e) {
       throw e;
     }
-
-    return "";
   }
 
 
@@ -43,7 +45,13 @@ class AuthRepository{
 
   Future<String> attemptAutoSignIn() async{
     try{
-      return await fetchUserIdFromAttributes();
+      final session = await Amplify.Auth.fetchAuthSession();
+      if (session.isSignedIn) {
+        return await fetchUserIdFromAttributes();
+      } else{
+        throw Exception('Not signed in');
+      }
+
     }catch(e){
       throw e;
     }
